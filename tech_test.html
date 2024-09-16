@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+<script src="https://mempool.space/mempool.js"></script>
+<script>
+    const init = async () => {
+        const { bitcoin: { addresses } } = mempoolJS({
+            hostname: 'mempool.space'
+        });
+        const address = '32ixEdVJWo3kmvJGMTZq5jAQVZZeuwnqzo';
+        
+        const myAddress = await addresses.getAddress({ address });
+        const addressTxs = await addresses.getAddressTxs({ address });
+        const confirmedTxs = addressTxs.filter(tx => tx.status.confirmed);
+        const balanceMempool = myAddress.mempool_stats.funded_txo_sum - myAddress.mempool_stats.spent_txo_sum;
+        const balanceOnchain = myAddress.chain_stats.funded_txo_sum - myAddress.chain_stats.spent_txo_sum;
+
+        const Period = (dias) => {
+          const tiempo = new Date();
+          const pastiempo = new Date(tiempo.getTime() - (dias * 24 * 60 * 60 * 1000));
+
+        let balance = 0;
+          confirmedTxs.forEach(tx => {
+            const confirdato = new Date(tx.status.block_time * 1000);
+            if (confirdato >= pastiempo) {
+              tx.vout.forEach(output => {
+                if (output.scriptpubkey_address === address) {
+                  balance += output.value;
+                }
+              });
+            }
+          });
+           
+          return balance;
+        };
+        const balance30dias = Period(30);
+        const balance7dias = Period(7);
+
+        document.getElementById("balance30dias").textContent = `${balance30dias} sats`;
+        document.getElementById("balance7dias").textContent = `${balance7dias} sats`;
+        document.getElementById("fundedCount").textContent = myAddress.chain_stats.funded_txo_count;
+        document.getElementById("fundedSum").textContent = myAddress.chain_stats.funded_txo_sum;
+        document.getElementById("spentCount").textContent = myAddress.chain_stats.spent_txo_count;
+        document.getElementById("spentSum").textContent = myAddress.chain_stats.spent_txo_sum;
+        document.getElementById("balanceOnchain").textContent = balanceOnchain;
+        document.getElementById("mempoolFundedCount").textContent = myAddress.mempool_stats.funded_txo_count;
+        document.getElementById("mempoolFundedSum").textContent = myAddress.mempool_stats.funded_txo_sum;
+        document.getElementById("mempoolSpentCount").textContent = myAddress.mempool_stats.spent_txo_count;
+        document.getElementById("mempoolSpentSum").textContent = myAddress.mempool_stats.spent_txo_sum;
+        document.getElementById("mempoolTxCount").textContent = myAddress.mempool_stats.tx_count;
+        document.getElementById("balanceMempool").textContent = balanceMempool;
+    };
+
+    init();
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+  body {
+    background-color: #0b0f24;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center; 
+    height: 100vh;
+    margin: 0; 
+}
+
+.Titulo {
+    text-align: center;
+    margin-top: 20px;
+    font-family: 'Arial Black', sans-serif; 
+    font-weight: bold; 
+    font-size: 30px; 
+    background: #e4dada; 
+    -webkit-background-clip: text; 
+    -moz-background-clip: text; 
+    background-clip: text; 
+    color: transparent; 
+}
+
+        .container {
+            display: flex;
+            justify-content: center;
+            width: 80%;
+        }
+        .box {
+            width: 45%;
+            background-color: #131830;
+            border: 1px solid #444;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .box h3 {
+            color: #ff8b07;
+            text-transform: uppercase;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        .info-item span {
+            color: #fffbf6;
+        }
+        .brillito {
+            color: #ff8b07; 
+            font-weight: bold;
+            font-size: 1.5em; 
+            text-shadow: 2px 2px 5px #ff8b07;
+        }
+
+    </style>
+</head>
+
+<body>
+  <div class="Titulo", id="address">Dirección: 32ixEdVJWo3kmvJGMTZq5jAQVZZeuwnqzo</div>
+<div class="container">
+    <div class="box">
+        <h3>Balance en On-Chain</h3>
+        <div class="info-item">
+            <span>Total de transacciones</span>
+            <span id="fundedCount"></span>
+        </div>
+        <div class="info-item">
+            <span>Envios Validos totales(sats):</span>
+            <span id="fundedSum"></span>
+        </div>
+        <div class="info-item">
+            <span>Transacciones Spent:</span>
+            <span id="spentCount"></span>
+        </div>
+        <div class="info-item">
+            <span>Total de trancsacciones spent(Sats):</span>
+            <span id="spentSum"></span>
+        </div>
+        <div class="info-item">
+            <span>On-Chain Balance (Sats):</span>
+            <span id="balanceOnchain" class="brillito"></span>
+        </div>
+    </div>
+    <div class="box">
+        <h3>Balance en Mempool</h3>
+        <div class="info-item">
+            <span>Transacciones pendientes:</span>
+            <span id="mempoolFundedCount"></span>
+        </div>
+        <div class="info-item">
+            <span>Blance en transacciones pendientes(Sats):</span>
+            <span id="mempoolFundedSum"></span>
+        </div>
+        <div class="info-item">
+            <span>Transacciones gastadas (Mempool):</span>
+            <span id="mempoolSpentCount"></span>
+        </div>
+        <div class="info-item">
+            <span>Total de trancsaccionesgastadas (Mempool) (Satoshis):</span>
+            <span id="mempoolSpentSum"></span>
+        </div>
+        <div class="info-item">
+            <span>Transacciones pendientes (Mempool):</span>
+            <span id="mempoolTxCount"></span>
+        </div>
+  
+        <div class="info-item">
+            <span>Balance Mempool (Sats):</span>
+            <span id="balanceMempool" class="brillito"></span>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="box">
+        <h3>Historial de balance</h3>
+        <div class="info-item">
+            <span>Balance ultimos 30 Dias:</span>
+            <span id="balance30dias">cargando...</span>
+        </div>
+        <div class="info-item">
+            <span>Balance ultimos 7 dias:</span>
+            <span id="balance7dias">cargando...</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>
